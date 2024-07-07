@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Portada de la Aplicación</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='index_styles.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Bienvenidos a la Aplicación de Robótica</h1>
+        <p>Seleccione un modo para comenzar:</p>
+        <div class="buttons">
+            <a href="{{ url_for('manual') }}" class="button">Modo Manual</a>
+            <a href="{{ url_for('automatic') }}" class="button">Modo Automático</a>
+        </div>
+        <div class="group-info">
+            <h2>Integrantes del Grupo</h2>
+            <p>Kevin Castillo</p>
+            <p>Franco Paredes</p>
+            <p>Rodrigo Pizarro</p>
+            <p>Elvis Rivera</p>
+            <h3>Profesor: Jorge Varas</h3>
+            <h3>Asignatura: Robótica avanzada</h3>
+            <h3>Semestre: 7mo semestre</h3>
+            <h3>Carrera: Ingeniería en automatización y robótica</h3>
+        </div>
+    </div>
+</body>
+</html>

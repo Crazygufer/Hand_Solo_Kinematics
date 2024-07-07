@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Modo Automático</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <style>
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 20px;
+        }
+        .matrix-box {
+            max-width: 600px;
+            word-wrap: break-word;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 14px;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            padding: 10px;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+        button {
+            display: block;
+            width: 200px;
+            padding: 10px;
+            margin: 10px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+    <script>
+        let simulationRunning = false;
+        let intervalId = null;
+
+        function updateMatrix() {
+            fetch('/get_transformation_matrix')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        document.getElementById('matrix').innerText = data.error;
+                    } else {
+                        document.getElementById('matrix').innerText = data.matrix;
+                    }
+                })
+                .catch(error => {
+                    document.getElementById('matrix').innerText = 'Error al obtener la matriz de transformación';
+                });
+        }
+
+        function startUpdatingMatrix() {
+            if (!simulationRunning) {
+                simulationRunning = true;
+                intervalId = setInterval(updateMatrix, 1000);  // Actualizar cada segundo
+            }
+        }
+
+        function stopUpdatingMatrix() {
+            if (simulationRunning) {
+                simulationRunning = false;
+                clearInterval(intervalId);
+                intervalId = null;
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            document.getElementById('start-button').addEventListener('click', function () {
+                fetch('/start_simulation', { method: 'POST' })
+                    .then(() => startUpdatingMatrix());
+            });
+
+            document.getElementById('stop-button').addEventListener('click', function () {
+                fetch('/stop_simulation', { method: 'POST' })
+                    .then(() => stopUpdatingMatrix());
+            });
+        });
+    </script>
+</head>
+<body>
+    <h1>Modo Automático</h1>
+    <div class="container">
+        <div class="matrix-box">
+            <h2>Matriz de Transformación</h2>
+            <pre id="matrix">Cargando...</pre>
+        </div>
+        <button id="start-button">Iniciar Simulación</button>
+        <button id="stop-button">Detener Simulación</button>
+    </div>
+    <a href="{{ url_for('index') }}">Volver al Inicio</a>
+</body>
+</html>
