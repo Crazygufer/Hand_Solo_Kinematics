@@ -12,6 +12,8 @@ j3 = sim.getObject('/Base_01_invisible/q3')
 j4 = sim.getObject('/Base_01_invisible/q4')
 j5 = sim.getObject('/Base_01_invisible/q5')
 
+effector = sim.getObject('/suctionPad')
+
 def calculate_transformation_matrix(q1, q2, q3, q4, q5):
     q1 = math.radians(q1)
     q2 = math.radians(q2)
@@ -42,11 +44,11 @@ def calculate_transformation_matrix(q1, q2, q3, q4, q5):
     transformation_matrix = transformation_matrix.evalf(4)
 
     # Imprimir la matriz de transformación
-    sym.pprint(transformation_matrix)
+    #sym.pprint(transformation_matrix)
 
-    print('X es igual a', Px.evalf(4))
-    print('Y es igual a', Py.evalf(4))
-    print('Z es igual a', Pz.evalf(4))
+    #print('X es igual a', Px.evalf(4))
+    #print('Y es igual a', Py.evalf(4))
+    #print('Z es igual a', Pz.evalf(4))
     return transformation_matrix.evalf(4)
 
 def move_to_positions(q1, q2, q3, q4, q5):
@@ -68,5 +70,20 @@ def move_to_positions(q1, q2, q3, q4, q5):
     sim.setJointTargetPosition(j5, q5)
     print("Movimiento completado")
 
+def set_effector(status):
+    if status:
+        sim.setInt32Signal('suctionPad_active', 1)
+    else:
+        sim.setInt32Signal('suctionPad_active', 0)
 
+def get_effector_status():
+    return sim.getInt32Signal('suctionPad_active')
 
+def get_joint_positions():
+    return {
+        'q1': round(math.degrees(sim.getJointPosition(j1)), 2),
+        'q2': round(math.degrees(sim.getJointPosition(j2)), 2),
+        'q3': round(math.degrees(sim.getJointPosition(j3)), 2),
+        'q4': round(math.degrees(sim.getJointPosition(j4)), 2),
+        'q5': round(math.degrees(sim.getJointPosition(j5)), 2)
+    }

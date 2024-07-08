@@ -7,26 +7,40 @@
     <style>
         .container {
             display: flex;
-            flex-direction: column;
-            align-items: center;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 20px;
             margin-top: 20px;
+        }
+        .box {
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background-color: #f9f9f9;
         }
         .matrix-box {
             max-width: 600px;
             word-wrap: break-word;
             font-family: 'Courier New', Courier, monospace;
             font-size: 14px;
-            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            padding: 10px;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+        .moves-box {
+            max-width: 600px;
+            word-wrap: break-word;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 14px;
             border: 1px solid #ccc;
             padding: 10px;
             border-radius: 5px;
             background-color: #f9f9f9;
         }
         button {
-            display: block;
             width: 200px;
             padding: 10px;
-            margin: 10px;
             background-color: #007BFF;
             color: white;
             border: none;
@@ -38,7 +52,6 @@
         }
     </style>
     <script>
-        let simulationRunning = false;
         let intervalId = null;
 
         function updateMatrix() {
@@ -56,16 +69,51 @@
                 });
         }
 
+        function updateMoves() {
+            fetch('/get_last_moves')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        document.getElementById('moves').innerText = data.error;
+                    } else {
+                        document.getElementById('moves').innerText = data.moves.join('\n');
+                    }
+                })
+                .catch(error => {
+                    document.getElementById('moves').innerText = 'Error al obtener los movimientos completados';
+                });
+        }
+
+        function updateSensorStatus() {
+            fetch('/get_current_sensor_status')
+                .then(response => response.json())
+                .then(data => {
+                    const sensorStatusElement = document.getElementById('sensor-status');
+                    if (data.status && data.status > 0) {
+                        sensorStatusElement.innerText = 'Sensor: Activado';
+                        sensorStatusElement.style.color = 'green';
+                    } else {
+                        sensorStatusElement.innerText = 'Sensor: Desactivado';
+                        sensorStatusElement.style.color = 'red';
+                    }
+                })
+                .catch(error => {
+                    document.getElementById('sensor-status').innerText = 'Error al obtener el estado del sensor';
+                });
+        }
+
         function startUpdatingMatrix() {
-            if (!simulationRunning) {
-                simulationRunning = true;
-                intervalId = setInterval(updateMatrix, 1000);  // Actualizar cada segundo
+            if (!intervalId) {
+                intervalId = setInterval(() => {
+                    updateMatrix();
+                    updateMoves();
+                    updateSensorStatus();
+                }, 1000);  // Actualizar cada segundo
             }
         }
 
         function stopUpdatingMatrix() {
-            if (simulationRunning) {
-                simulationRunning = false;
+            if (intervalId) {
                 clearInterval(intervalId);
                 intervalId = null;
             }
@@ -87,12 +135,19 @@
 <body>
     <h1>Modo Automático</h1>
     <div class="container">
-        <div class="matrix-box">
+        <div class="box">
+            <button id="start-button">Iniciar Simulación</button>
+            <button id="stop-button">Detener Simulación</button>
+            <div id="sensor-status" class="status">Cargando...</div>
+        </div>
+        <div class="box matrix-box">
             <h2>Matriz de Transformación</h2>
             <pre id="matrix">Cargando...</pre>
         </div>
-        <button id="start-button">Iniciar Simulación</button>
-        <button id="stop-button">Detener Simulación</button>
+        <div class="box moves-box">
+            <h2>Movimientos Completados</h2>
+            <div id="moves">Cargando...</div>
+        </div>
     </div>
     <a href="{{ url_for('index') }}">Volver al Inicio</a>
 </body>

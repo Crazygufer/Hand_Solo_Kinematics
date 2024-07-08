@@ -7,12 +7,17 @@
     <style>
         .container {
             display: flex;
-            flex-direction: column;
-            align-items: center;
+            justify-content: center;
+            align-items: flex-start;
+            gap: 20px;
             margin-top: 20px;
         }
+        .buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
         .box {
-            margin: 10px;
             padding: 20px;
             border: 1px solid #ccc;
             border-radius: 5px;
@@ -23,17 +28,14 @@
             word-wrap: break-word;
             font-family: 'Courier New', Courier, monospace;
             font-size: 14px;
-            margin-bottom: 20px;
             border: 1px solid #ccc;
             padding: 10px;
             border-radius: 5px;
             background-color: #f9f9f9;
         }
         button {
-            display: block;
             width: 200px;
             padding: 10px;
-            margin: 10px;
             background-color: #007BFF;
             color: white;
             border: none;
@@ -78,6 +80,41 @@
             }
         }
 
+        function updateEffectorStatus() {
+            fetch('/get_effector_status')
+                .then(response => response.json())
+                .then(data => {
+                    const effectorStatus = document.getElementById('effector-status');
+                    if (data.status) {
+                        effectorStatus.innerText = 'Efector Activado';
+                        effectorStatus.style.color = 'green';
+                    } else {
+                        effectorStatus.innerText = 'Efector Desactivado';
+                        effectorStatus.style.color = 'red';
+                    }
+                })
+                .catch(error => {
+                    document.getElementById('effector-status').innerText = 'Error al obtener el estado del efector';
+                });
+        }
+
+        function setEffector(action) {
+            fetch('/set_effector', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `action=${action}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                updateEffectorStatus();
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        }
+
         document.addEventListener('DOMContentLoaded', function () {
             document.getElementById('start-button').addEventListener('click', function () {
                 fetch('/start_simulation', { method: 'POST' })
@@ -101,14 +138,46 @@
                       document.write(html);
                       document.close();
                       startUpdatingMatrix();
+                      updateEffectorStatus();
                   });
             });
+
+            document.getElementById('reset-button').addEventListener('click', function () {
+                fetch('/reset_positions', { method: 'POST' })
+                    .then(() => {
+                        const inputs = document.querySelectorAll('input[type="number"]');
+                        inputs.forEach(input => input.value = 0);
+                        startUpdatingMatrix();
+                    });
+            });
+
+            document.getElementById('toggle-effector').addEventListener('click', function () {
+                const action = this.dataset.action === 'on' ? 'off' : 'on';
+                setEffector(action);
+                this.dataset.action = action;
+            });
+
+            // Redondear los valores a dos decimales en la carga de la página
+            const motorInputs = document.querySelectorAll('input[type="number"]');
+            motorInputs.forEach(input => {
+                input.value = parseFloat(input.value).toFixed(2);
+            });
+
+            // Actualizar el estado del efector al cargar la página
+            updateEffectorStatus();
         });
     </script>
 </head>
 <body>
     <h1>Modo Manual</h1>
     <div class="container">
+        <div class="buttons">
+            <button id="start-button">Iniciar Simulación</button>
+            <button id="stop-button">Detener Simulación</button>
+            <button id="reset-button">Resetear Posiciones a 0</button>
+            <button id="toggle-effector" data-action="off">Activar/Desactivar Efector</button>
+            <div id="effector-status">Cargando...</div>
+        </div>
         <div class="box">
             <form id="update-form" method="post">
                 <table>
@@ -123,7 +192,7 @@
                         <tr>
                             <td>{{ motor }}</td>
                             <td>
-                                <input type="number" step="0.1" name="{{ motor }}" value="{{ position }}">
+                                <input type="number" step="0.01" name="{{ motor }}" value="{{ position | round(2) }}">
                             </td>
                         </tr>
                         {% endfor %}
@@ -136,8 +205,6 @@
             <h2>Matriz de Transformación</h2>
             <pre id="matrix">Cargando...</pre>
         </div>
-        <button id="start-button">Iniciar Simulación</button>
-        <button id="stop-button">Detener Simulación</button>
     </div>
     <a href="{{ url_for('index') }}">Volver al Inicio</a>
 </body>
