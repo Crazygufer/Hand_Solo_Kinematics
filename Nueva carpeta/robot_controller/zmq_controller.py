@@ -44,11 +44,11 @@ def calculate_transformation_matrix(q1, q2, q3, q4, q5):
     transformation_matrix = transformation_matrix.evalf(4)
 
     # Imprimir la matriz de transformación
-    #sym.pprint(transformation_matrix)
+    sym.pprint(transformation_matrix)
 
-    #print('X es igual a', Px.evalf(4))
-    #print('Y es igual a', Py.evalf(4))
-    #print('Z es igual a', Pz.evalf(4))
+    print('X es igual a', Px.evalf(4))
+    print('Y es igual a', Py.evalf(4))
+    print('Z es igual a', Pz.evalf(4))
     return transformation_matrix.evalf(4)
 
 def move_to_positions(q1, q2, q3, q4, q5):
@@ -87,3 +87,9 @@ def get_joint_positions():
         'q4': round(math.degrees(sim.getJointPosition(j4)), 2),
         'q5': round(math.degrees(sim.getJointPosition(j5)), 2)
     }
+
+def stop_simulation(self):
+    try:
+        self.sim.stopSimulation()
+    except Exception as e:
+        print(f"Error al detener la simulación: {e}")

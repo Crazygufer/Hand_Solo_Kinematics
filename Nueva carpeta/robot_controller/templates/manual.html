@@ -47,7 +47,6 @@
         }
     </style>
     <script>
-        let simulationRunning = false;
         let intervalId = null;
 
         function updateMatrix() {
@@ -63,21 +62,6 @@
                 .catch(error => {
                     document.getElementById('matrix').innerText = 'Error al obtener la matriz de transformación';
                 });
-        }
-
-        function startUpdatingMatrix() {
-            if (!simulationRunning) {
-                simulationRunning = true;
-                intervalId = setInterval(updateMatrix, 1000);  // Actualizar cada segundo
-            }
-        }
-
-        function stopUpdatingMatrix() {
-            if (simulationRunning) {
-                simulationRunning = false;
-                clearInterval(intervalId);
-                intervalId = null;
-            }
         }
 
         function updateEffectorStatus() {
@@ -98,31 +82,14 @@
                 });
         }
 
-        function setEffector(action) {
-            fetch('/set_effector', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                },
-                body: `action=${action}`
-            })
-            .then(response => response.json())
-            .then(data => {
-                updateEffectorStatus();
-            })
-            .catch(error => {
-                console.error('Error:', error);
-            });
-        }
-
         document.addEventListener('DOMContentLoaded', function () {
             document.getElementById('start-button').addEventListener('click', function () {
-                fetch('/start_simulation', { method: 'POST' })
-                    .then(() => startUpdatingMatrix());
+                fetch('/start_simulation_manual', { method: 'POST' })
+                    .then(() => updateEffectorStatus());
             });
 
-            document.getElementById('stop-button').addEventListener('click', function () {
-                fetch('/stop_simulation', { method: 'POST' })
+            document.getElementById('stop-button-manual').addEventListener('click', function () {
+                fetch('/stop_simulation_manual', { method: 'POST' })
                     .then(() => stopUpdatingMatrix());
             });
 
@@ -153,8 +120,11 @@
 
             document.getElementById('toggle-effector').addEventListener('click', function () {
                 const action = this.dataset.action === 'on' ? 'off' : 'on';
-                setEffector(action);
-                this.dataset.action = action;
+                fetch(`/set_effector?action=${action}`, { method: 'POST' })
+                    .then(() => {
+                        this.dataset.action = action;
+                        updateEffectorStatus();
+                    });
             });
 
             // Redondear los valores a dos decimales en la carga de la página
@@ -173,7 +143,7 @@
     <div class="container">
         <div class="buttons">
             <button id="start-button">Iniciar Simulación</button>
-            <button id="stop-button">Detener Simulación</button>
+            <button id="stop-button-manual">Detener Simulación</button>
             <button id="reset-button">Resetear Posiciones a 0</button>
             <button id="toggle-effector" data-action="off">Activar/Desactivar Efector</button>
             <div id="effector-status">Cargando...</div>

@@ -80,21 +80,38 @@ def get_current_sensor_status():
     except Exception as e:
         return jsonify(error=str(e)), 500
 
-@app.route('/start_simulation', methods=['POST'])
-def start_simulation():
+@app.route('/start_simulation_manual', methods=['POST'])
+def start_simulation_manual():
     try:
-        zmq_controller_auto.start_simulation()
+        zmq_controller_auto.start_simulation_manual()
         return '', 204  # No content response
     except Exception as e:
         return jsonify(error=str(e)), 500
 
-@app.route('/stop_simulation', methods=['POST'])
-def stop_simulation():
+@app.route('/start_simulation_automatic', methods=['POST'])
+def start_simulation_automatic():
+    try:
+        zmq_controller_auto.start_simulation_automatic()
+        return '', 204  # No content response
+    except Exception as e:
+        return jsonify(error=str(e)), 500
+
+@app.route('/stop_simulation_manual', methods=['POST'])
+def stop_simulation_manual():
+    try:
+        zmq_controller.stop_simulation()
+        return '', 204  # No content response
+    except Exception as e:
+        return jsonify(error=str(e)), 500
+
+@app.route('/stop_simulation_automatic', methods=['POST'])
+def stop_simulation_automatic():
     try:
         zmq_controller_auto.stop_simulation()
         return '', 204  # No content response
     except Exception as e:
         return jsonify(error=str(e)), 500
+
 
 if __name__ == '__main__':
     app.run(debug=True)

@@ -20,6 +20,7 @@ class RobotController:
         self.delay_ms = delay_ms
         self.last_moves = []
         self.sensor_status = None
+        self.mode = None
 
     def set_delay(self, delay_ms):
         self.delay_ms = delay_ms
@@ -73,7 +74,7 @@ class RobotController:
         transport_position = {'q1': 270, 'q2': 0, 'q3': -45, 'q4': -95, 'q5': 0}
         drop_position = {'q1': 270, 'q2': -35, 'q3': -45, 'q4': -95, 'q5': 0}
         
-        while True:
+        while self.mode == 'automatic':
             sensor_status = self.get_sensor_status()
             print(f"Sensor status: {sensor_status}")  # Log sensor status
             
@@ -96,18 +97,29 @@ class RobotController:
                 print("No object detected, waiting...")
                 time.sleep(1)  # Wait and check again
 
-    def start_simulation(self):
+    def start_simulation_manual(self):
         try:
             self.sim.startSimulation()
+            self.mode = 'manual'
         except Exception as e:
-            print(f"Error al iniciar la simulación: {e}")
-        self.perform_pick_and_place()
+            print(f"Error al iniciar la simulación en modo manual: {e}")
+
+    def start_simulation_automatic(self):
+        try:
+            self.sim.startSimulation()
+            self.mode = 'automatic'
+            self.perform_pick_and_place()
+        except Exception as e:
+            print(f"Error al iniciar la simulación en modo automático: {e}")
 
     def stop_simulation(self):
         try:
             self.sim.stopSimulation()
+            # Detener cualquier actividad específica del modo automático aquí
         except Exception as e:
             print(f"Error al detener la simulación: {e}")
+
+robot = RobotController(delay_ms=500)  # Inicializamos con un delay de 500ms
 
 def get_transformation_matrix():
     try:
@@ -119,10 +131,11 @@ def get_transformation_matrix():
         print(f"Error en get_transformation_matrix: {e}")
         return None
 
-robot = RobotController(delay_ms=500)  # Inicializamos con un delay de 500ms
+def start_simulation_manual():
+    robot.start_simulation_manual()
 
-def start_simulation():
-    robot.start_simulation()
+def start_simulation_automatic():
+    robot.start_simulation_automatic()
 
 def stop_simulation():
     robot.stop_simulation()
@@ -135,4 +148,3 @@ def get_last_moves():
 
 def get_current_sensor_status():
     return robot.sensor_status
-

@@ -121,12 +121,12 @@
 
         document.addEventListener('DOMContentLoaded', function () {
             document.getElementById('start-button').addEventListener('click', function () {
-                fetch('/start_simulation', { method: 'POST' })
+                fetch('/start_simulation_automatic', { method: 'POST' })
                     .then(() => startUpdatingMatrix());
             });
 
-            document.getElementById('stop-button').addEventListener('click', function () {
-                fetch('/stop_simulation', { method: 'POST' })
+            document.getElementById('stop-button-automatic').addEventListener('click', function () {
+                fetch('/stop_simulation_automatic', { method: 'POST' })
                     .then(() => stopUpdatingMatrix());
             });
         });
@@ -137,7 +137,7 @@
     <div class="container">
         <div class="box">
             <button id="start-button">Iniciar Simulación</button>
-            <button id="stop-button">Detener Simulación</button>
+            <button id="stop-button-automatic">Detener Simulación</button>
             <div id="sensor-status" class="status">Cargando...</div>
         </div>
         <div class="box matrix-box">
